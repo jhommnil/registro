@@ -69,7 +69,11 @@ def registrar_asistencia():
     def registrar():
         codigo = int(entry_codigo.get())
         contraseña = entry_contraseña.get()
-
+        # Verificar si el código y la contraseña coinciden con un docente existente
+        c.execute("SELECT COUNT(*) FROM Docente WHERE codigo = ? AND contraseña = ?", (codigo, contraseña))
+        if c.fetchone()[0] == 0:
+            messagebox.showerror('Error', 'Código o contraseña incorrectos.')
+            return
         # Insertar el registro de asistencia en la tabla "RegistroAsistencia"
         c.execute("INSERT INTO RegistroAsistencia (codigo, contraseña) VALUES (?, ?)", (codigo, contraseña))
         conn.commit()
@@ -143,6 +147,42 @@ def eliminar_docente():
     btn_eliminar = Button(window_eliminar, text='Eliminar', command=eliminar)
     btn_eliminar.pack()
 
+# Función para mostrar las asistencias
+def mostrar_asistencias():
+    def buscar_asistencias():
+        codigo = int(entry_codigo.get())
+
+        # Buscar las asistencias del docente en la tabla "RegistroAsistencia"
+        c.execute("SELECT * FROM RegistroAsistencia WHERE codigo = ?", (codigo,))
+        asistencias = c.fetchall()
+
+        # Crear ventana para mostrar asistencias
+        window_asistencias = Toplevel(root)
+        window_asistencias.title('Asistencias')
+
+        # Crear el Treeview
+        tree = ttk.Treeview(window_asistencias, columns=('codigo', 'contraseña', 'fecha_hora'), show='headings')
+        tree.heading('codigo', text='Código')
+        tree.heading('contraseña', text='Contraseña')
+        tree.heading('fecha_hora', text='Fecha y Hora')
+        tree.pack()
+
+        # Insertar los datos en el Treeview
+        for asistencia in asistencias:
+            tree.insert('', 'end', values=asistencia)
+
+    # Crear ventana para buscar asistencias
+    window_buscar = Toplevel(root)
+    window_buscar.title('Buscar Asistencias')
+
+    label_codigo = Label(window_buscar, text='Código:')
+    label_codigo.pack()
+    entry_codigo = Entry(window_buscar)
+    entry_codigo.pack()
+
+    btn_buscar = Button(window_buscar, text='Buscar', command=buscar_asistencias)
+    btn_buscar.pack()
+
 # Crear la interfaz gráfica
 root = Tk()
 root.title('Registro de Asistencia')
@@ -158,5 +198,8 @@ btn_mostrar_docentes.pack()
 
 btn_eliminar_docente = Button(root, text='Eliminar Docente', command=eliminar_docente)
 btn_eliminar_docente.pack()
+
+btn_mostrar_asistencias = Button(root, text='Mostrar Asistencias', command=mostrar_asistencias)
+btn_mostrar_asistencias.pack()
 
 root.mainloop()
