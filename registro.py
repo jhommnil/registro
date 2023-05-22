@@ -4,6 +4,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from PIL import ImageTk, Image
 from tkinter.font import Font
+from datetime import datetime
 # Crear la conexión a la base de datos
 conn = sqlite3.connect('registro_asistencia.db')
 c = conn.cursor()
@@ -70,13 +71,15 @@ def registrar_asistencia():
     def registrar():
         codigo = int(entry_codigo.get())
         contraseña = entry_contraseña.get()
+        fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Obtener la fecha y hora actual
+
         # Verificar si el código y la contraseña coinciden con un docente existente
         c.execute("SELECT COUNT(*) FROM Docente WHERE codigo = ? AND contraseña = ?", (codigo, contraseña))
         if c.fetchone()[0] == 0:
             messagebox.showerror('Error', 'Código o contraseña incorrectos.')
             return
         # Insertar el registro de asistencia en la tabla "RegistroAsistencia"
-        c.execute("INSERT INTO RegistroAsistencia (codigo, contraseña) VALUES (?, ?)", (codigo, contraseña))
+        c.execute("INSERT INTO RegistroAsistencia (codigo, contraseña, fecha_hora) VALUES (?, ?, ?)", (codigo, contraseña,fecha_hora))
         conn.commit()
         messagebox.showinfo('Éxito', 'Asistencia registrada correctamente.')
         window_registrar.destroy()
